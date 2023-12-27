@@ -423,3 +423,186 @@ class MSSLoss(torch.nn.Module):
                     target, value, self.loss_type, dims=kwargs.get("dims", None)
                 )
         return loss
+
+
+class LoudnessLoss(torch.nn.Module):
+    def __init__(self, loss_type="L1", weight=1.0):
+        super().__init__()
+        self.loss_type = loss_type
+        self.weight = weight
+
+    def forward(self, outputs):
+        loudness = outputs.get("loudness", None)
+        x_hat = outputs.get("x_hat", None)
+
+        loudness_hat = get_loudness(x_hat, hopsize=256)
+        return self.weight * mean_difference(loudness, loudness_hat, loss_type=self.loss_type)
+
+
+# Experimental
+class MSOTLoss(torch.nn.Module):
+    """Multi-scale spectrogram loss with optimal transport"""
+
+    def __init__(
+        self,
+        fft_sizes=(2048, 1024, 512, 256, 128, 64),
+        p=1,
+        mag_weight=0.0,
+        logmag_weight=0.0,
+        # loudness_weight=0.0
+    ):
+        super().__init__()
+        self.fft_sizes = fft_sizes
+        self.p = p
+        self.mag_weight = mag_weight
+        self.logmag_weight = logmag_weight
+
+        self.spectrogram_ops = []
+        self.fft_freqs = []
+        for size in self.fft_sizes:
+            spectrogram_op = functools.partial(compute_mag, size=size, add_in_sqrt=1e-10)
+            self.spectrogram_ops.append(spectrogram_op)
+            self.fft_freqs.append(torch.fft.rfftfreq(size))
+
+        self.wasserstein = Wasserstein1D(p=p, require_sort=True, log_scaled_x=False)
+
+    def forward(self, target_audio, audio, **kwargs):
+        loss = 0.0
+
+        # Compute loss for each fft size.
+        for i, loss_op in enumerate(self.spectrogram_ops):
+            target_mag = loss_op(target_audio).transpose(-2, -1)
+            value_mag = loss_op(audio).transpose(-2, -1)
+
+            x_pos = torch.tensor(self.fft_freqs[i], device=target_mag.device)
+            x_pos = x_pos / x_pos.max()
+            y_pos = x_pos.clone()
+
+            # Add magnitude loss.
+            if self.mag_weight > 0:
+                loss += self.mag_weight * self.wasserstein(
+                    target_mag, value_mag, x_pos=x_pos, y_pos=y_pos
+                )
+
+            # Add logmagnitude loss, reusing spectrogram.
+            if self.logmag_weight > 0:
+                target = safe_log(target_mag)
+                value = safe_log(value_mag)
+                loss += self.logmag_weight * self.wasserstein(
+                    target, value, x_pos=x_pos, y_pos=y_pos
+                )
+        return loss
+
+
+class F0WeightHinge(torch.nn.Module):
+    """Hinge loss penalizing f0 weights that are too small (smaller than min_f0_weight)"""
+
+    def __init__(self, min_f0_weight=0.4, weight=10):
+        super().__init__()
+        self.min_f0_weight = min_f0_weight
+        self.weight = weight
+
+    def forward(self, outputs):
+        """Args
+        outputs: dict containing 'weights' key, which is a tensor of shape (batch, n_harmonics)
+            or (batch, time, n_harmonics))"""
+        weights = outputs.get("weights", None)
+        if weights is None:
+            return 0.0
+        else:
+            f0_weight = weights[..., 0]
+            return self.weight * torch.mean(torch.relu(self.min_f0_weight - f0_weight))
+
+
+class PeakinessPenalty(torch.nn.Module):
+    """Applied penalty if the distribution has positive second derivative,
+    possibly indicating multiple peaks"""
+
+    def __init__(self, weight=1.0):
+        super().__init__()
+        self.weight = weight
+
+    def forward(self, outputs):
+        output_distribution = outputs.get("probs", None)
+        if output_distribution is None:
+            return 0.0
+        else:
+            second_deriv = torch.diff(output_distribution, n=2, dim=-1)
+            return self.weight * torch.mean(torch.relu(second_deriv))
+
+
+class SpectralSmoothnessPenalty(torch.nn.Module):
+    """Penalizes the difference between consecutive harmonic amplitude values
+    (i.e. the first derivative of the harmonic amplitude distribution)"""
+
+    def __init__(self, weight=1.0, penalty_type="first_derivative"):
+        super().__init__()
+        self.weight = weight
+        self.penalty_type = penalty_type
+
+    def forward(self, outputs):
+        weights = outputs.get("weights", None)
+        if weights is None:
+            return 0.0
+        else:
+            if self.penalty_type == "first_derivative":
+                first_deriv = torch.diff(weights, n=1, dim=-1)
+                # Squared to penalize both positive and negative changes
+                return self.weight * torch.mean(first_deriv**2)
+            elif "moving_average" in self.penalty_type:
+                if "l1" in self.penalty_type:
+                    p = 1
+                else:
+                    p = 2
+                k = 3
+                moving_average = torch.nn.functional.avg_pool1d(
+                    weights, kernel_size=k, stride=1, padding=k // 2
+                ).squeeze(1)
+                return self.weight * torch.mean(torch.abs(weights - moving_average) ** p)
+            else:
+                raise ValueError(f"penalty_type {self.penalty_type} not implemented")
+
+
+class ParameterLoss(torch.nn.Module):
+    def __init__(self, parameter, loss_type="L2", weight=1):
+        super().__init__()
+        self.parameter = parameter
+        self.loss_type = loss_type
+        self.weight = weight
+
+    def forward(self, inputs):
+        if isinstance(inputs, dict):
+            x = inputs[self.parameter]
+            x_true = inputs["true_" + self.parameter]
+
+            if (x.shape[-1] > x_true.shape[-1]) and self.parameter == "weights":
+                # If output weights have more partials than true weights, add zeros to true weights
+                # to match the number of partials
+                # weights is (batch, time, n1_partials)
+                # true_weights is (batch, n2_partials)
+                # true weights needs to be (batch, time, n1_partials)
+                x_true = torch.cat(
+                    [
+                        x_true.unsqueeze(1).repeat(1, inputs["weights"].shape[1], 1),
+                        torch.zeros_like(inputs["weights"])[:, :, x_true.shape[-1] :],
+                    ],
+                    dim=-1,
+                )
+
+        else:
+            raise ValueError("inputs must be a dict")
+        if x.ndim == 3 and x_true.ndim == 2 and x.shape[-1] == x_true.shape[-1]:
+            x_true = x_true.unsqueeze(1).expand_as(x)
+        return self.weight * mean_difference(x, x_true, loss_type=self.loss_type)
+
+
+class F0ConsistencyReg(torch.nn.Module):
+    def __init__(self, weight=1.0, loss_type="L1"):
+        super().__init__()
+        self.weight = weight
+        self.loss_type = loss_type
+
+    def forward(self, frequency_unit, frequency_unit_cons):
+        return self.weight * mean_difference(
+            frequency_unit, frequency_unit_cons, loss_type=self.loss_type
+        )

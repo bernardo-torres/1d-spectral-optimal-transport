@@ -139,7 +139,7 @@ trainer:
       dirpath: null
       every_n_epochs: null
       every_n_train_steps: null
-      filename: best-val-loss-{epoch}-{step}
+      filename: best-lsd-{epoch}-{step}
       mode: min
       monitor: loss/val
       save_last: null

@@ -144,9 +144,9 @@ trainer:
       dirpath: null
       every_n_epochs: null
       every_n_train_steps: null
-      filename: best-val-loss-{epoch}-{step}
+      filename: best-lsd-{epoch}-{step}
       mode: min
-      monitor: loss/val
+      monitor: val_metrics/log_spectral_distance
       save_last: null
       save_on_train_epoch_end: null
       save_top_k: 1
