@@ -3,7 +3,7 @@
 [Paper (arXiv)](https://arxiv.org/abs/2312.14507)
 <!-- [![Paper (arXiv)](https://img.shields.io/badge/arXiv-2312.14507-b31b1b.svg)](https://arxiv.org/abs/2312.14507) -->
 
-This is the repository for our paper "[Unsupervised Harmonic Parameter Estimation Using Differentiable DSP and Spectral Optimal Transport.](https://arxiv.org/abs/2312.14507)", by *Bernardo Torres, Geoffroy Peeters, and Gaël Richard*.
+This is the official repository for the paper "[Unsupervised Harmonic Parameter Estimation Using Differentiable DSP and Spectral Optimal Transport.](https://arxiv.org/abs/2312.14507)", by *Bernardo Torres, Geoffroy Peeters, and Gaël Richard*.
 
 We introduce a loss function for comparing spectra *horizontally* inspired by optimal transport. It computes the one dimensional Wasserstein distance between the spectra of two signals, which gives a measure of energy displacement along the frequency axis. 
 
@@ -11,11 +11,11 @@ We introduce a loss function for comparing spectra *horizontally* inspired by op
 <table>
   <tr>
     <td>
-      <p align="center"><b>We propose doing this</b></p>
+      <p align="center"><b>We propose doing this  <br>                           </b></p>
       <img src="figures/spectra_horizontal_transport_lines.png" width="450" />
     </td>
     <td>
-      <p align="center"><b>Spectral losses (such as the Multi-Scale Spectral loss) do this</b></p>
+      <p align="center"><b>Multi-Scale Spectral loss and others do this</b></p>
       <img src="figures/spectra_vertical.png" width="450" />
     </td>
   </tr>
