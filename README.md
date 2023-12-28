@@ -27,7 +27,9 @@ We introduce a loss function for comparing spectra *horizontally* inspired by op
 
 By computing the gradient of this loss function with respect to the parameters of a signal processor (such as an sinusoidal oscillator), we can improve frequency localization/estimation compared to traditional *vertical* spectral losses (such as the Multi-Scale Spectral loss).
 
-<img src="figures/losses_sine.png" width="400">
+<p align="center">
+  <img src="figures/losses_sine.png" width="400">
+</p>
 
 
 ### Summary
@@ -36,9 +38,9 @@ In the paper we test this loss function on an autoencoding task aimed at estimat
 
 The [loss function](https://github.com/bernardo-torres/1d-spectral-optimal-transport/blob/4ba751d4cc7b7427ce8a1e7e9ae8320d799deeff/losses.py#L89) was **largely** based on [POT](https://pythonot.github.io/)s implementation of the 1D Wasserstein distance, which computes the quantile functions of the spectra (illustrated below).
 
-<!-- insert pdf figure from figures/fig.pdf -->
-<img src="figures/quantiles_cdfs.png" width="450">
-
+<p align="center">
+  <img src="figures/quantiles_cdfs.png" width="450">
+</p>
 
 
 - **Lightweight pitch estimator**: Our encoder uses a lightweight architecture (46K params) based on [PESTO](https://github.com/SonyCSLParis/pesto/tree/master) to estimate the parameters of a harmonic synthesizer (fundamental frequency and amplitudes).
