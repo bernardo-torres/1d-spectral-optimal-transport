@@ -309,3 +309,48 @@ class PreloadedSinusoidDataModule(pl.LightningDataModule):
         )
 
 
+# Usage example:
+
+if __name__ == "__main__":
+
+    # n_samples: 4096  # Verify why it bugs with 8192 and not 8193
+    # # sample_rate: 8000
+    # freq_gen_min: 40
+    # freq_gen_max: 1950
+    # amplitude_min: 0.4
+    # amplitude_max: 1
+    # size: 5000
+    # # n_samples: 256 # defined by spectrum_size
+    # n_sinusoids: 8
+    # n_sinusoids_min: 1
+    # harmonic: true
+    # eval_split: 0.2
+    # test_split: 0.1
+
+    # Create and setup the dataset
+    dataset = SimpleSinusoidDataset(
+        freq_gen_min=40,
+        freq_gen_max=1950,
+        n_samples=4096,
+        amplitude_min=0.4,
+        amplitude_max=1,
+        size=4000,
+        batch_size=8,
+        batch_size_val=8,
+        n_sinusoids=8,
+        eval_split=0.2,
+        test_split=0.1,
+        n_sinusoids_min=1,
+        harmonic=True,
+    )
+
+    dataset.setup()
+
+    # Save the dataset
+    dataset.save_dataset("saved_dataset.pth")
+    print("Dataset saved.")
+
+    # Load the dataset
+    loaded_data = torch.load("saved_dataset.pth")
+    dataset = PreloadedSinusoidDataset(loaded_data)
+    print("Dataset loaded.")

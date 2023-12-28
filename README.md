@@ -1,21 +1,43 @@
-# Unsupervised Harmonic Parameter Estimation Using Differentiable DSP and Spectral Optimal Transport
+# An optimal transport inspired loss function for improving frequency localization in differentiable DSP
 
 [Paper (arXiv)](https://arxiv.org/abs/2312.14507)
+<!-- [![Paper (arXiv)](https://img.shields.io/badge/arXiv-2312.14507-b31b1b.svg)](https://arxiv.org/abs/2312.14507) -->
 
 This is the repository for our paper "[Unsupervised Harmonic Parameter Estimation Using Differentiable DSP and Spectral Optimal Transport.](https://arxiv.org/abs/2312.14507)", by *Bernardo Torres, Geoffroy Peeters, and Gaël Richard*.
 
-We introduce a loss function for comparing spectra *horizontally* inspired by optimal transport. It computes the one dimensional Wasserstein distance between the spectra of two signals, which gives a measure of energy displacement along the frequency axis. By computing the gradient of this loss function with respect to the parameters of a signal processor (such as an sinusoidal oscillator), we can improve frequency localization/estimation compared to traditional *vertical* spectral losses (such as the Multi-Scale Spectral loss).
+We introduce a loss function for comparing spectra *horizontally* inspired by optimal transport. It computes the one dimensional Wasserstein distance between the spectra of two signals, which gives a measure of energy displacement along the frequency axis. 
+
+<!-- Place two figures side by side, add a title above each -->
+<table>
+  <tr>
+    <td>
+      <p align="center"><b>We propose doing this</b></p>
+      <img src="figures/spectra_horizontal_transport_lines.png" width="450" />
+    </td>
+    <td>
+      <p align="center"><b>Spectral losses (such as the Multi-Scale Spectral loss) do this</b></p>
+      <img src="figures/spectra_vertical.png" width="450" />
+    </td>
+  </tr>
+</table>
+
+
+
+
+
+By computing the gradient of this loss function with respect to the parameters of a signal processor (such as an sinusoidal oscillator), we can improve frequency localization/estimation compared to traditional *vertical* spectral losses (such as the Multi-Scale Spectral loss).
+
+<img src="figures/losses_sine.png" width="450">
 
 
 ### Summary
-- **Spectral Optimal Transport**: We use a loss function inspired by optimal transport to compare the spectra of two signals
+- **Spectral Optimal Transport**: We use a loss function inspired by optimal transport to compare the spectra of two signals.
 In the paper we test this loss function on an autoencoding task aimed at estimating the parameters of a harmonic synthesizer (fundamental frequency and amplitudes) and at obtaining good reconstruction.
 
-The [loss function](https://github.com/bernardo-torres/1d-spectral-optimal-transport/blob/4ba751d4cc7b7427ce8a1e7e9ae8320d799deeff/losses.py#L89) was largely based on [POT](https://pythonot.github.io/)s implementation of the 1D Wasserstein distance, which computes the quantile functions of the spectra:
+The [loss function](https://github.com/bernardo-torres/1d-spectral-optimal-transport/blob/4ba751d4cc7b7427ce8a1e7e9ae8320d799deeff/losses.py#L89) was **largely** based on [POT](https://pythonot.github.io/)s implementation of the 1D Wasserstein distance, which computes the quantile functions of the spectra (illustrated below).
 
 <!-- insert pdf figure from figures/fig.pdf -->
 <img src="figures/quantiles_cdfs.png" width="500">
-<img src="figures/spectra.png" width="450">
 
 
 
@@ -34,6 +56,8 @@ conda env create -f environment.yml
 conda activate sot
 ```
 
+If using a different environment, please check your PyTorch Lightning and Lightning CLI version for compatibility, as it has been changing a lot recently and some modifications might be needed to run the code.
+
 #### Paper experiments
 
 Configuration files are available in the [paper-experiments](paper-experiments) folder. Each subfolder is an experiment as described in the paper and we provide configuration files for each of the 5 runs with different random seeds.
@@ -45,7 +69,7 @@ python train.py --config checkpoints/<experiment_name>/<run>/train_config.yaml
 
 #### Reproducing results from the paper
 
-We provide pre-trained checkpoints for each experiment [here](checkpoints). Download the file and put it under this_project_folder/checkpoints/. The stucture should look like this:
+We provide pre-trained checkpoints for each experiment [here](https://drive.google.com/file/d/1SubWO5kuwZuDcDzYEpBC5H1AXZBD9dLN/view?usp=sharing). Download the file, extract it (+- 2.6 Gb) and put it under this_project_folder/checkpoints/. The stucture should look like this:
 ```
 checkpoints
 ├── MSS-LIN
@@ -72,6 +96,8 @@ python eval_paper.py
 
 
 ## Citation
+
+
 If you find our work useful or use it in your research, you can cite it using:
 
 ```bibtex
