@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
 
 import wandb
 import pytorch_lightning as pl
@@ -8,9 +7,6 @@ from pytorch_lightning.cli import instantiate_class
 
 from typing import List, Union
 
-
-plt.switch_backend("agg")  # otherwise will get thread not running in main loop error
-# plt.switch_backend("TkAgg")  # otherwise will get thread not running in main loop error
 
 import losses as losses
 from metrics import compute_metrics
@@ -92,12 +88,6 @@ class Trainer(pl.LightningModule):
         pitch_unit = pitch_outputs.pop("pitch_unit")
         pitch_hz = unit_to_hz(pitch_unit, self.freq_hz_min, self.freq_hz_max)
 
-        # This mode serves as baseline for reconstruction error and weight/gain estimation
-        if self.baseline_gt_pitch:
-            pitch_hz = kwargs["gt_pitch_hz"]
-            if pitch_hz.ndim == 1:
-                pitch_hz = pitch_hz.unsqueeze(-1).repeat(1, n_frames).reshape(batch * n_frames, 1)
-            pitch_unit = hz_to_unit(pitch_hz, self.freq_hz_min, self.freq_hz_max)
 
         weights = z.get("weights", None)
         if weights is None:
@@ -105,7 +95,7 @@ class Trainer(pl.LightningModule):
         if weights.ndim == 1:
             weights = weights.unsqueeze(-1)
 
-        # TODO - Improve this later ------------------
+        # TODO - Improve this later 
         for key, value in z.items():
             # Unpack batch and time from first dimension and keep the rest
             z[key] = value.reshape(batch, time, *value.shape[1:])
@@ -163,7 +153,6 @@ class Trainer(pl.LightningModule):
     def shared_step(self, batch, batch_idx, step_name):
         x = batch["x"]
         frd_kwargs = {}
-        frd_kwargs = {} if not self.baseline_gt_pitch else {"gt_pitch_hz": batch["frequency"]}
 
         # Forward pass
         output = self(x, **frd_kwargs)
@@ -211,31 +200,8 @@ class Trainer(pl.LightningModule):
         spec_x_hat = self.transform(x_hat)
 
         loss = 0
-        # Pretrain losses
-        if self.global_step < self.pretrain_steps:
-            for loss_fn in self.pretrain_loss_fn:
-                name = loss_fn.__class__.__name__
-                if name == "ParameterLoss":
-                    name = f"{name}_{loss_fn.parameter}"
-                elif name == "MSSLoss":
-                    _loss = loss_fn(x, x_hat)
-                elif name == "Wasserstein1D":
-                    _loss = loss_fn(spec_x, spec_x_hat, x_pos=x_pos, y_pos=y_pos)
-                elif name == "Wasserstein1DWithTransform":
-                    _loss = loss_fn(x, x_hat)
-                elif name == "MixOfLosses":
-                    _loss = loss_fn(spec_x, spec_x_hat, x_pos=x_pos, y_pos=y_pos)
-                else:
-                    _loss = loss_fn(output)
-                loss += _loss
-
-                self.log(f"loss/{step_name}/{name}_pretrain", _loss)
 
         compute_main_loss = True
-        compute_main_loss = (self.global_step >= self.pretrain_steps) and (
-            not isinstance(self.loss_fn, nn.Identity)
-        )
-
         # Training losses
         if compute_main_loss:
             if isinstance(self.loss_fn, losses.MixOfLosses):
@@ -274,17 +240,6 @@ class Trainer(pl.LightningModule):
                     f"loss/{step_name}/{self.loss_fn.__class__.__name__}", loss, prog_bar=False
                 )
 
-        # Regularization losses (not used in the paper)
-        for reg in self.regularizations:
-            name = reg.__class__.__name__
-            if name == "ParameterLoss":
-                name = f"{name}_{reg.parameter}"
-            if name == "F0ConsistencyReg":
-                _loss = reg(output["frequency_unit"], self.encode_pitch(output["x_hat"]))
-            else:
-                _loss = reg(output)
-            loss += _loss
-            self.log(f"loss/{step_name}/{name}", _loss)
 
         # log total loss
         self.log(f"loss/{step_name}", loss, prog_bar=True)
