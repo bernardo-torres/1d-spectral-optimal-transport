@@ -12,11 +12,11 @@ We introduce a loss function for comparing spectra *horizontally* inspired by op
   <tr>
     <td>
       <p align="center"><b>We propose doing this  <br>                           </b></p>
-      <img src="figures/spectra_horizontal_transport_lines.png" width="450" />
+      <img src="figures/spectra_horizontal_transport_lines.png" width="500" />
     </td>
     <td>
       <p align="center"><b>Multi-Scale Spectral loss and others do this</b></p>
-      <img src="figures/spectra_vertical.png" width="450" />
+      <img src="figures/spectra_vertical.png" width="500" />
     </td>
   </tr>
 </table>
@@ -28,7 +28,7 @@ We introduce a loss function for comparing spectra *horizontally* inspired by op
 By computing the gradient of this loss function with respect to the parameters of a signal processor (such as an sinusoidal oscillator), we can improve frequency localization/estimation compared to traditional *vertical* spectral losses (such as the Multi-Scale Spectral loss).
 
 <p align="center">
-  <img src="figures/losses_sine.png" width="400">
+  <img src="figures/losses_sine.png" width="550">
 </p>
 
 
@@ -39,7 +39,7 @@ In the paper we test this loss function on an autoencoding task aimed at estimat
 The [loss function](https://github.com/bernardo-torres/1d-spectral-optimal-transport/blob/4ba751d4cc7b7427ce8a1e7e9ae8320d799deeff/losses.py#L89) was **largely** based on [POT](https://pythonot.github.io/)s implementation of the 1D Wasserstein distance, which computes the quantile functions of the spectra (illustrated below).
 
 <p align="center">
-  <img src="figures/quantiles_cdfs.png" width="450">
+  <img src="figures/quantiles_cdfs.png" width="550">
 </p>
 
 
