@@ -310,7 +310,7 @@ def wasserstein_1d(
 
     if p == 1:
         return torch.sum(delta * diff_quantiles, 1)
-    return torch.sum(delta * diff_quantiles.pow(p), 1).pow(1.0 / p)
+    return torch.sum(delta * diff_quantiles.pow(p), 1)
 
 
 class Wasserstein1DWithTransform(torch.nn.Module):
