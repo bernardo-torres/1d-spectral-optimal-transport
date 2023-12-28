@@ -32,15 +32,15 @@ Checkpoints are available in the [checkpoints](checkpoints) folder. Each subfold
 
 To run an experiment, run the following command:
 ```bash
-python train.py --config checkpoints/<experiment_name>/config.yaml
+python train.py --config checkpoints/<experiment_name>/<run>/train_config.yaml
 ```
-To reproduce the result table from the paper, run the following command:
+To reproduce the result table from the paper, run:
 ```bash
 python eval_paper.py
 ```
 
 ## Data Description
-The synthetic data used for training, evaluation, and testing is available at [data](data). You can use PreloadedSinusoidDataModule in [synthetic_data.py](synthetic_data.py) to load it easily.
+The synthetic data used for training, evaluation, and testing is available [here](https://drive.google.com/file/d/1_aZzEK82Ko7IjXzyTFZqTtglwIbtnrL3/view?usp=sharing). You can download it and put the .pth file 40_1950_4096_04_1_4000_8_1_harmonic.pth in [data](data). You can use PreloadedSinusoidDataModule in [synthetic_data.py](synthetic_data.py) to load it easily.
 
 ## Citation
 If you find our work useful or use it in your research, you can cite it using:

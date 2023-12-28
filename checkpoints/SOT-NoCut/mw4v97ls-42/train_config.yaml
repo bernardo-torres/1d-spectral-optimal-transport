@@ -1,11 +1,6 @@
 batch_size: 64
 ckpt_dirpath: logs/sot-paper/SOT-NoCut/mw4v97ls-42/checkpoints
 ckpt_path: null
-configs:
-- configs/synthetic_data/base.yaml
-- configs/encoder/pesto_M=20_K=15.yaml
-- configs/transform/stft-2048_flat.yaml
-- configs/synthetic_data/harmonic_1-8_16khz_preloaded.yaml
 data:
   class_path: synthetic_data.PreloadedSinusoidDataModule
   init_args:
