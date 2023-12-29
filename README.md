@@ -66,7 +66,7 @@ Configuration files are available in the [paper-experiments](paper-experiments) 
 
 To run an experiment, run the following command:
 ```bash
-python train.py --config checkpoints/<experiment_name>/<run>/train_config.yaml
+python train.py --config paper-experiments/<experiment_name>/<run>/train_config.yaml
 ```
 
 #### Reproducing results from the paper
