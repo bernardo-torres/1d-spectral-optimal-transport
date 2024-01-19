@@ -55,6 +55,7 @@ class Sinusoidal(Processor):
         freq_scale_fn="frequencies_softmax",
         harmonic=0,
         apply_roll_off=False,
+        use_angular_cumsum=False,
     ):
 
         super().__init__()
@@ -65,6 +66,7 @@ class Sinusoidal(Processor):
         self.freq_scale_fn = get_fn_by_name(freq_scale_fn)
         self.harmonic = harmonic
         self.apply_roll_off = apply_roll_off
+        self.use_angular_cumsum = use_angular_cumsum
 
     def get_controls(self, amplitudes, frequencies):
         """Convert network output tensors into a dictionary of synthesizer controls.
@@ -113,6 +115,7 @@ class Sinusoidal(Processor):
             frequency_envelopes=frequency_envelopes,
             amplitude_envelopes=amplitude_envelopes,
             sample_rate=self.sample_rate,
+            use_angular_cumsum=self.use_angular_cumsum,
         )
 
         if self.apply_roll_off:
