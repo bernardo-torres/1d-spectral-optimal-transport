@@ -179,6 +179,10 @@ def run_cli():
         step = torch.load(ckpt_path, map_location="cpu")["global_step"]
         cli.trainer.fit_loop.epoch_loop._batches_that_stepped = step
 
+    if cli.config["trainer"]["deterministic"]:
+        print("Deterministic training")
+        torch.use_deterministic_algorithms(True, warn_only=True)
+
     cli.trainer.fit(cli.model, cli.datamodule, ckpt_path=ckpt_path)
 
     # Load best checkpoint and test
