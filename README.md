@@ -3,7 +3,7 @@
 [Paper (arXiv)](https://arxiv.org/abs/2312.14507)
 <!-- [![Paper (arXiv)](https://img.shields.io/badge/arXiv-2312.14507-b31b1b.svg)](https://arxiv.org/abs/2312.14507) -->
 
-This is the official repository for the paper "[Unsupervised Harmonic Parameter Estimation Using Differentiable DSP and Spectral Optimal Transport.](https://arxiv.org/abs/2312.14507)", by *Bernardo Torres, Geoffroy Peeters, and Gaël Richard*.
+This is the official repository for the paper "[Unsupervised Harmonic Parameter Estimation Using Differentiable DSP and Spectral Optimal Transport.](https://arxiv.org/abs/2312.14507)", by *Bernardo Torres, Geoffroy Peeters, and Gaël Richard*. Check out the [poster here](https://bernardo-torres.github.io/documents/Torres_ICASSP_2024_poster.pdf).
 
 We introduce a loss function for comparing spectra *horizontally* inspired by optimal transport. It computes the one dimensional Wasserstein distance between the spectra of two signals, which gives a measure of energy displacement along the frequency axis. 
 
@@ -12,11 +12,11 @@ We introduce a loss function for comparing spectra *horizontally* inspired by op
   <tr>
     <td>
       <p align="center"><b>We propose doing this  <br>                           </b></p>
-      <img src="figures/spectra_horizontal_transport_lines.png" width="500" />
+      <img src="figures/poster_spectra_horizontal_transport_lines.png" width="500" />
     </td>
     <td>
       <p align="center"><b>Multi-Scale Spectral loss and others do this</b></p>
-      <img src="figures/spectra_vertical.png" width="500" />
+      <img src="figures/poster_spectra_vertical.png" width="500" />
     </td>
   </tr>
 </table>
@@ -28,7 +28,7 @@ We introduce a loss function for comparing spectra *horizontally* inspired by op
 By computing the gradient of this loss function with respect to the parameters of a signal processor (such as an sinusoidal oscillator), we can improve frequency localization/estimation compared to traditional *vertical* spectral losses (such as the Multi-Scale Spectral loss).
 
 <p align="center">
-  <img src="figures/losses_sine.png" width="550">
+  <img src="figures/poster_losses_sine.png" width="550">
 </p>
 
 
@@ -39,12 +39,21 @@ In the paper we test this loss function on an autoencoding task aimed at estimat
 The [loss function](https://github.com/bernardo-torres/1d-spectral-optimal-transport/blob/4ba751d4cc7b7427ce8a1e7e9ae8320d799deeff/losses.py#L89) was **largely** based on [POT](https://pythonot.github.io/)s implementation of the 1D Wasserstein distance, which computes the quantile functions of the spectra (illustrated below).
 
 <p align="center">
-  <img src="figures/quantiles_cdfs.png" width="550">
+  <img src="figures/poster_quantiles_cdfs.png" width="550">
 </p>
 
 
 - **Lightweight pitch estimator**: Our encoder uses a lightweight architecture (46K params) based on [PESTO](https://github.com/SonyCSLParis/pesto/tree/master) to estimate the parameters of a harmonic synthesizer (fundamental frequency and amplitudes).
 - **Differentiable DSP**: Our decoder is a harmonic synthesizer from [DDSP](https://openreview.net/pdf?id=B1x1ma4tDr) that synthesizes audio from fundamental frequency and amplitude parameters. Even though the decoder is not trained, using automatic differentiation we can compute the gradient of the loss function w.r.t. its input parameters (fundamental frequency and amplitudes).
+
+- **Toy autoencoding task**:
+
+<p align="center">
+  <img src="figures/[diagram] Spectral Optimal Transport.png" width="1000">
+</p>
+
+- **Some things to be careful about**: SOT can be quite sensitive to spectral leakage and noise, so it definitely works better if your spectra have clear modes and are not only noise. This is due mostly to normalization. You can definitely threshold your noise or remove low amplitude points entirely, SOT works even if your spectra have different support :) (they just have to live in the same metric space and have each amplitude value associated with a frequency value).
+
 
 ## Data Description
 The synthetic data used for training, evaluation, and testing is available [here](https://drive.google.com/file/d/1_aZzEK82Ko7IjXzyTFZqTtglwIbtnrL3/view?usp=sharing). You can download it and put the file `40_1950_4096_04_1_4000_8_1_harmonic.pth` in a data subfolder. You can use PreloadedSinusoidDataModule in [synthetic_data.py](synthetic_data.py) to load it easily. Code for generating the data is also available.
@@ -103,11 +112,13 @@ python eval_paper.py
 If you find our work useful or use it in your research, you can cite it using:
 
 ```bibtex
-@article{torres2023unsupervised,
-      title={Unsupervised Harmonic Parameter Estimation Using Differentiable DSP and Spectral Optimal Transport}, 
-      author={Torres, Bernardo and Peeters, Geoffroy and Richard, Ga{\"e}l},
-      journal={arXiv preprint arXiv:2312.14507},
-      year={2023},
+@inproceedings{torres2024unsupervised,
+  title={Unsupervised harmonic parameter estimation using differentiable DSP and spectral optimal transport},
+  author={Torres, Bernardo and Peeters, Geoffroy and Richard, Ga{\"e}l},
+  booktitle={ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  pages={1176--1180},
+  year={2024},
+  organization={IEEE}
 }
 
 ```
