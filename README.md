@@ -12,11 +12,11 @@ We introduce a loss function for comparing spectra *horizontally* inspired by op
   <tr>
     <td>
       <p align="center"><b>We propose doing this  <br>                           </b></p>
-      <img src="figures/poster_spectra_horizontal_transport_lines.png" width="500" />
+      <img src="figures/poster_spectra_horizontal_transport_lines.png" width="380" />
     </td>
     <td>
       <p align="center"><b>Multi-Scale Spectral loss and others do this</b></p>
-      <img src="figures/poster_spectra_vertical.png" width="500" />
+      <img src="figures/poster_spectra_vertical.png" width="380" />
     </td>
   </tr>
 </table>
@@ -28,7 +28,7 @@ We introduce a loss function for comparing spectra *horizontally* inspired by op
 By computing the gradient of this loss function with respect to the parameters of a signal processor (such as an sinusoidal oscillator), we can improve frequency localization/estimation compared to traditional *vertical* spectral losses (such as the Multi-Scale Spectral loss).
 
 <p align="center">
-  <img src="figures/poster_losses_sine.png" width="550">
+  <img src="figures/poster_losses_sine.png" width="700">
 </p>
 
 
